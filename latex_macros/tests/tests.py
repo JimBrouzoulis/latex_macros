@@ -109,4 +109,31 @@ def test_single_arg():
     assert out == r'\bar a word \bar \alpha'
 
 
+def test_single_arg_duplicate_macro():
+
+    # GIVEN a new command
+    nc = r'\newcommand{\mean}[1]{\bar{ #1 } }'
+
+    # WHEN expanding the macro
+    text = r'\mean{a} word \mean{\alpha}'
+    out = replace_macros.expand_macro(nc, text)
+
+    # THEN we expect
+    assert out == r'\bar{ a } word \bar{ \alpha }'
+
+
+
+def test_two_args():
+
+    # GIVEN a new command
+    nc = '\\newcommand{\\my_macro}[2]{\\foo{#1} \\bar{#2} }'
+
+    # WHEN expanding the macro
+    text = r'\my_macro{a}{b}'
+    out = replace_macros.expand_macro(nc, text)
+
+    # THEN we expect
+    assert out == r'\foo{a} \bar{b}'
+
+
 

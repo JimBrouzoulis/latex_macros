@@ -1,16 +1,18 @@
 import re
 from collections import namedtuple
 newcommand_re = re.compile(r"""
-        ^\\newcommand       # starts with the newcommand
-        {                   # followed by the macro definition within {}
+        ^\\newcommand           # starts with the newcommand
+        {                       # followed by the macro definition within {}
           \s* (\S*?) \s*
         }
         \s*
-        (\[ \s* (\d) \s* \])?
+        (\[ \s* (\d) \s* \])?   # number of arguments in the command
         \s*
-        {                   # followed by the command definition within {}
+        {                       # followed by the command definition within {}
           \s* ([\S\s]*?) \s*
-        }""",
+        }
+        \s*$
+        """,
         re.VERBOSE
     )
 
@@ -24,7 +26,7 @@ def parse_newcommand(raw_command):
     reg = newcommand_re
     m = reg.search(raw_command)
     if m:
-        return NewCommand(macro=m.group(1), command=m.group(4), num_args=m.group(3))
+        return NewCommand(macro=m.group(1), command=m.group(4).strip(), num_args=m.group(3))
 
 
 def sub_newcommand(newc, text):
@@ -51,6 +53,7 @@ def get_replacement_command(nc, match_obj):
     expanded_command = nc.command
     for arg in range(int(nc.num_args)):
         # replace the command argument with that found in the text
+
         expanded_command = re.sub(
             pattern=r'#{arg}'.format(arg=arg + 1),
             repl=re.escape(match_obj.group(arg + 1)),
