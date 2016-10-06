@@ -95,34 +95,15 @@ def test_arg_sub():
 
 
 
-def my_replace(nc, text):
-
-    macro, command, num_args = replace_macros.parse_newcommand(nc)
-
-    arg_pattern = r'\{\s*(\S*?)\s*\}'*int(num_args)
-    #arg_pattern = r'\{\s*(\S*?)\s*\}'*int(num_args) # removed spaces in the end
-    pattern = re.compile(r'%s%s' % (re.escape(macro), arg_pattern))
-
-    matches = pattern.finditer(text)
-    for m in matches:
-        print(m)
-        patterns = [(r'#%s' % i, re.escape(m.group(i))) for i in range(1, int(num_args) + 1)]
-
-        for p in patterns:
-            print(p)
-            command = command.replace(p[0], p[1])
-            text = text.replace(m.group(), command)
-
-    return text
 
 def test_single_arg():
-    
+
     # GIVEN a new command
     nc = '\\newcommand{\\mean}[1]{\\bar #1}'
 
     # WHEN expanding the macro
     text = r'\mean{a}'
-    out = my_replace(nc, text)
+    out = replace_macros.expand_macro(nc, text)
 
     # THEN we expect
     assert out == r'\bar a'
