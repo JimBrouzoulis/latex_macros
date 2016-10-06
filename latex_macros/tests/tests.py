@@ -13,9 +13,9 @@ def test_newcommand_re():
     # THEN 2 groups should be found
     m = reg.search(newc)
     assert m.group(1) == r'\sig'
-    assert m.group(2) == r'\sigma'
+    assert m.group(4) == r'\sigma'
 
-    macro, command = replace_macros.parse_newcommand(newc)
+    (macro, command, _) = replace_macros.parse_newcommand(newc)
     assert macro == r'\sig'
     assert command == r'\sigma'
 
@@ -53,6 +53,79 @@ def test_multiple_sub():
     out = replace_macros.sub_newcommand(newc, text)
     assert out == r'\word and some math $\word$ $\word$.'
 
+
+def test_arg_sub():
+
+    nc = '\\newcommand{\\mupp}[3]{#1 #2 #3#3}'
+
+    macro, command, num_args = replace_macros.parse_newcommand(nc)
+
+    # WHEN making a pattern and substituting in a string
+    #re_string = r'%s' % re.escape(macro) + r'{}'
+
+    arg_pattern = r'\{\s*(\S*?)\s*\}\s*'*int(num_args)
+
+    pattern = re.compile(r'%s%s' % (re.escape(macro), arg_pattern))
+    print(arg_pattern)
+    print(pattern)
+
+    #text = '\\mupp{ a  }{b }{  \\alpha}'
+    text = r'\mupp{ a  }{b }{  \alpha}'
+
+    m = pattern.match(text)
+    assert m.group(1) == r'a'
+    assert m.group(2) == r'b'
+    assert m.group(3) == r'\alpha'
+
+    patterns = [(r'#%s' % i, re.escape(m.group(i))) for i in range(1, int(num_args)+1)]
+    print('patterns: {p}'.format(p=patterns))
+    print('pattern: {p}'.format(p=pattern))
+
+    print('command before: {c}'.format(c=command))
+    for p in patterns:
+        command = command.replace(p[0], p[1])
+
+    print('command after: {c}'.format(c=command))
+    print('sample text: {t}'.format(t=text))
+
+    out = re.sub(pattern, command, text)
+
+    print('out: {o}'.format(o=out))
+    assert out == r'a b \alpha\alpha'
+
+
+
+def my_replace(nc, text):
+
+    macro, command, num_args = replace_macros.parse_newcommand(nc)
+
+    arg_pattern = r'\{\s*(\S*?)\s*\}'*int(num_args)
+    #arg_pattern = r'\{\s*(\S*?)\s*\}'*int(num_args) # removed spaces in the end
+    pattern = re.compile(r'%s%s' % (re.escape(macro), arg_pattern))
+
+    matches = pattern.finditer(text)
+    for m in matches:
+        print(m)
+        patterns = [(r'#%s' % i, re.escape(m.group(i))) for i in range(1, int(num_args) + 1)]
+
+        for p in patterns:
+            print(p)
+            command = command.replace(p[0], p[1])
+            text = text.replace(m.group(), command)
+
+    return text
+
+def test_single_arg():
+    
+    # GIVEN a new command
+    nc = '\\newcommand{\\mean}[1]{\\bar #1}'
+
+    # WHEN expanding the macro
+    text = r'\mean{a}'
+    out = my_replace(nc, text)
+
+    # THEN we expect
+    assert out == r'\bar a'
 
 
 
