@@ -99,14 +99,14 @@ def test_arg_sub():
 def test_single_arg():
 
     # GIVEN a new command
-    nc = '\\newcommand{\\mean}[1]{\\bar #1}'
+    nc = '\\newcommand{\\mean}[1]{\\bar #1 }'
 
     # WHEN expanding the macro
-    text = r'\mean{a}'
+    text = r'\mean{a} word \mean{\alpha}'
     out = replace_macros.expand_macro(nc, text)
 
     # THEN we expect
-    assert out == r'\bar a'
+    assert out == r'\bar a word \bar \alpha'
 
 
 

@@ -45,19 +45,28 @@ def generate_pattern(nc):
     pattern = re.compile(r'%s%s' % (re.escape(nc.macro), arg_pattern))
     return pattern
 
+def get_replacement_command(nc, match_obj):
+    """ Return the command that should replace the matched macro in the text"""
+
+    expanded_command = nc.command
+    for arg in range(int(nc.num_args)):
+        # replace the command argument with that found in the text
+        expanded_command = re.sub(
+            pattern=r'#{arg}'.format(arg=arg + 1),
+            repl=re.escape(match_obj.group(arg + 1)),
+            string=expanded_command
+        )
+    return expanded_command
+
 
 def expand_macro(raw_command, text):
+    """ Expand all the instances of a given macro used in a text"""
 
     nc = parse_newcommand(raw_command)
-    command = nc.command
-    pattern = generate_pattern(nc)
-
+    pattern = generate_pattern(nc)  # the pattern to search for in the text
     matches = pattern.finditer(text)
-    for m in matches:
-        patterns = [(r'#{arg}'.format(arg=i), re.escape(m.group(i))) for i in range(1, int(nc.num_args)+1)]
-
-        for p in patterns:
-            command = command.replace(*p)
-            text = text.replace(m.group(), command)
+    for m in matches:  # for each use of the macro
+        expanded_command = get_replacement_command(nc, m)
+        text = text.replace(m.group(), expanded_command)
 
     return text
