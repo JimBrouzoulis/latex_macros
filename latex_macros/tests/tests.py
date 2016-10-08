@@ -155,13 +155,48 @@ def test_two_commands():
 
 def test_nested_commands():
 
+    # GIVEN two dependent newcommands
     commands = [
         '\\newcommand{\\macro1}{\\foo}',
         '\\newcommand{\\macro2}{\\macro1 \\bar}',
     ]
-    # GIVEN two dependent newcommands
+    # WHEN expanding the macros
     text = r'\macro1 \macro2'
     text = replace_macros.expand_macros(commands, text)
 
     # THEN we expect
     assert text == r'\foo \foo \bar'
+
+
+def test_read_commands():
+
+    # GIVEN a text containing definitions of new commands
+    command_text = """
+        \\newcommand{\\macro1}{\\foo}
+        \\newcommand{\\macro2}{\\macro1 \\bar}
+        # a python comment that will be ignored
+        % a tex comment that will be ignored
+        \\newcommand{\\macro3}{\\macro1 \\macro2}
+    """
+
+    re_comment = re.compile(r'\s*\#|\%.*')
+    re_newcommand = re.compile(r'\s*(\\newcommand.*)\s*')
+    commands = []
+    for line in command_text.splitlines():
+        if not re_comment.match(line):
+            m = re_newcommand.match(line)
+            if m:
+                commands.append(m.group(1))
+
+    print(commands)
+    assert len(commands) == 3
+    assert commands[0] == '\\newcommand{\\macro1}{\\foo}'
+    assert commands[1] == '\\newcommand{\\macro2}{\\macro1 \\bar}'
+    assert commands[2] == '\\newcommand{\\macro3}{\\macro1 \\macro2}'
+
+
+
+
+
+
+
