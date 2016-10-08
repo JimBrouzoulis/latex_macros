@@ -178,24 +178,31 @@ def test_read_commands():
         % a tex comment that will be ignored
         \\newcommand{\\macro3}{\\macro1 \\macro2}
     """
+    # WHEN parsing commands from a text block
+    commands = replace_macros.get_commands_from_text(command_text)
 
-    re_comment = re.compile(r'\s*\#|\%.*')
-    re_newcommand = re.compile(r'\s*(\\newcommand.*)\s*')
-    commands = []
-    for line in command_text.splitlines():
-        if not re_comment.match(line):
-            m = re_newcommand.match(line)
-            if m:
-                commands.append(m.group(1))
-
-    print(commands)
+    # THEN we should get 3 strings containing newcommand definitions
     assert len(commands) == 3
     assert commands[0] == '\\newcommand{\\macro1}{\\foo}'
     assert commands[1] == '\\newcommand{\\macro2}{\\macro1 \\bar}'
     assert commands[2] == '\\newcommand{\\macro3}{\\macro1 \\macro2}'
 
 
+def test_parsing_and_sub():
 
+    # GIVEN two commands
+    command_text = """
+        \\newcommand{\\macro1}{\\foo}
+        \\newcommand{\\macro2}{\\macro1 \\bar}
+    """
+
+    # WHEN parsing the commands and substituting in the text
+    commands = replace_macros.get_commands_from_text(command_text)
+    text = r'\macro1 \macro2'
+    text = replace_macros.expand_macros(commands, text)
+
+    # THEN we expect
+    assert text == r'\foo \foo \bar'
 
 
 

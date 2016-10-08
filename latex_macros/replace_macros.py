@@ -93,3 +93,19 @@ def expand_macros(command_list, text):
     for command in reversed(command_list):
         text = expand_macro(command, text)
     return text
+
+
+re_comment = re.compile(r'\s*\#|\%.*')
+re_newcommand = re.compile(r'\s*(\\newcommand.*)\s*')
+
+
+def get_commands_from_text(text):
+
+    commands = []
+    for line in text.splitlines():
+        if not re_comment.match(line):
+            m = re_newcommand.match(line)
+            if m:
+                commands.append(m.group(1))
+
+    return commands
