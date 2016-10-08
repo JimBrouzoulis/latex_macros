@@ -42,23 +42,26 @@ def sub_newcommand(newc, text):
 
 def generate_pattern(nc):
     """Generate regex pattern for the macro"""
-
-    arg_pattern = r'\{\s*(\S*?)\s*\}' * int(nc.num_args)  # TODO should remove capturing of trailing spaces
-    pattern = re.compile(r'%s%s' % (re.escape(nc.macro), arg_pattern))
+    if nc.num_args:
+        arg_pattern = r'\{\s*(\S*?)\s*\}' * int(nc.num_args)  # TODO should remove capturing of trailing spaces
+        pattern = re.compile(r'%s%s' % (re.escape(nc.macro), arg_pattern))
+    else:
+        pattern = re.compile(r'%s' % re.escape(nc.macro))
     return pattern
 
 def get_replacement_command(nc, match_obj):
     """ Return the command that should replace the matched macro in the text"""
 
     expanded_command = nc.command
-    for arg in range(int(nc.num_args)):
-        # replace the command argument with that found in the text
+    if nc.num_args:
+        for arg in range(int(nc.num_args)):
+            # replace the command argument with that found in the text
 
-        expanded_command = re.sub(
-            pattern=r'#{arg}'.format(arg=arg + 1),
-            repl=re.escape(match_obj.group(arg + 1)),
-            string=expanded_command
-        )
+            expanded_command = re.sub(
+                pattern=r'#{arg}'.format(arg=arg + 1),
+                repl=re.escape(match_obj.group(arg + 1)),
+                string=expanded_command
+            )
     return expanded_command
 
 

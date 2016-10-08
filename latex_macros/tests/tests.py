@@ -125,7 +125,7 @@ def test_single_arg_duplicate_macro():
 
 def test_two_args():
 
-    # GIVEN a new command
+    # GIVEN a newcommand
     nc = '\\newcommand{\\my_macro}[2]{\\foo{#1} \\bar{#2} }'
 
     # WHEN expanding the macro
@@ -134,6 +134,24 @@ def test_two_args():
 
     # THEN we expect
     assert out == r'\foo{a} \bar{b}'
+
+
+
+def test_two_commands():
+
+    # GIVEN two newcommand
+    commands = [
+        '\\newcommand{\\my_macro_1}{\\foo}',
+        '\\newcommand{\\my_macro_2}[1]{\\bar{#1}}'
+    ]
+
+    # WHEN expanding the macros
+    text = r'\my_macro_1 some text \my_macro_2{a}'
+    for nc in commands:
+        text = replace_macros.expand_macro(nc, text)
+
+    # THEN we expect
+    assert text == r'\foo some text \bar{a}'
 
 
 
