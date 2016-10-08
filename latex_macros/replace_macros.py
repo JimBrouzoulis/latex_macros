@@ -82,8 +82,14 @@ def expand_macro(raw_command, text):
 
 
 def expand_macros(command_list, text):
-    """ Expand all the macros in a text using the list of 'newcommands'"""
+    """
+    Expand all the macros in a text using the list of 'newcommands'
 
-    for command in command_list:
+    Iterates over the commands in reverse order, to assert that dependent
+    commands are expanded first. Of course, this assumes that the list of commands
+    is ordered in sequence (which it should be if copied from a .tex document)
+    """
+
+    for command in reversed(command_list):
         text = expand_macro(command, text)
     return text

@@ -139,7 +139,7 @@ def test_two_args():
 
 def test_two_commands():
 
-    # GIVEN two newcommand
+    # GIVEN two newcommands
     commands = [
         '\\newcommand{\\my_macro_1}{\\foo}',
         '\\newcommand{\\my_macro_2}[1]{\\bar{#1}}'
@@ -153,4 +153,15 @@ def test_two_commands():
     assert text == r'\foo some text \bar{a}'
 
 
+def test_nested_commands():
 
+    commands = [
+        '\\newcommand{\\macro1}{\\foo}',
+        '\\newcommand{\\macro2}{\\macro1 \\bar}',
+    ]
+    # GIVEN two dependent newcommands
+    text = r'\macro1 \macro2'
+    text = replace_macros.expand_macros(commands, text)
+
+    # THEN we expect
+    assert text == r'\foo \foo \bar'
