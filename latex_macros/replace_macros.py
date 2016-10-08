@@ -1,23 +1,25 @@
 import re
 from collections import namedtuple
-newcommand_re = re.compile(r"""
-        ^\\newcommand           # starts with the newcommand
-        {                       # followed by the macro definition within {}
-          \s* (\S*?) \s*
-        }
-        \s*
-        (\[ \s* (\d) \s* \])?   # number of arguments in the command
-        \s*
-        {                       # followed by the command definition within {}
-          \s* ([\S\s]*?) \s*
-        }
-        \s*$
-        """,
-        re.VERBOSE
-    )
+newcommand_re = re.compile(
+    r"""
+    ^\\newcommand           # starts with the newcommand
+    {                       # followed by the macro definition within {}
+      \s* (\S*?) \s*
+    }
+    \s*
+    (\[ \s* (\d) \s* \])?   # number of arguments in the command
+    \s*
+    {                       # followed by the command definition within {}
+      \s* ([\S\s]*?) \s*
+    }
+    \s*$
+    """,
+    re.VERBOSE
+)
 
 
 NewCommand = namedtuple('new_command', ['macro', 'command', 'num_args'])
+
 
 def parse_newcommand(raw_command):
     """ Tokenize the raw command
@@ -49,6 +51,7 @@ def generate_pattern(nc):
         pattern = re.compile(r'%s' % re.escape(nc.macro))
     return pattern
 
+
 def get_replacement_command(nc, match_obj):
     """ Return the command that should replace the matched macro in the text"""
 
@@ -75,4 +78,12 @@ def expand_macro(raw_command, text):
         expanded_command = get_replacement_command(nc, m)
         text = text.replace(m.group(), expanded_command)
 
+    return text
+
+
+def expand_macros(command_list, text):
+    """ Expand all the macros in a text using the list of 'newcommands'"""
+
+    for command in command_list:
+        text = expand_macro(command, text)
     return text

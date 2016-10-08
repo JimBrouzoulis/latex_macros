@@ -147,8 +147,7 @@ def test_two_commands():
 
     # WHEN expanding the macros
     text = r'\my_macro_1 some text \my_macro_2{a}'
-    for nc in commands:
-        text = replace_macros.expand_macro(nc, text)
+    text = replace_macros.expand_macros(commands, text)
 
     # THEN we expect
     assert text == r'\foo some text \bar{a}'
